@@ -23,12 +23,12 @@
         <input  type="submit"/>
     </div>
     </form>
-    {{if .}}
+    {{if .Text}}
     <p> information submitted successfully </p>
     <h2>File title</h2>
-    <p>{{.name}}</p>
+    <p>{{.Name}}</p>
     <h2>File content</h2>
-    <p>{{.text}}</p>
+    <p>{{.Text}}</p>
     <a href="/text"> see my information</a>
     {{end}}
 	{{/* TODO: add JS <script src="index.js"></script> */}}

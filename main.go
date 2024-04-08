@@ -9,7 +9,7 @@ import (
 
 type registrationData struct {
 	Name string
-	text string
+	Text string
 }
 
 var tpl *template.Template
@@ -40,7 +40,7 @@ func welcome(w http.ResponseWriter, req *http.Request){
 		if err != nil {
 			http.Error(w, "could not find file", http.StatusInternalServerError)
 		}
-		data.text = string(c)
+		data.Text = string(c)
 	}
 	tpl.ExecuteTemplate(w, "welcome.gohtml", data)
 }
