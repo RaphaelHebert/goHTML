@@ -5,22 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>HTML 5 Boilerplate</title>
-    {{/* TODO: add css <link rel="stylesheet" href="style.css"> */}}
+    <link rel="stylesheet" href="/static/index.css">
   </head>
   <body>
     <h1>Welcome</h1>
     <h2>Submit your work</h2>
     <form method="POST" enctype="multipart/form-data">
-    <div>
+    <div class="col">
         <label for="name">Your name:</label>
         <input  id="name" type="text" name="name" maxlength=128 minlength=4 required/>
     </div>
-    <div>
+    <div class="col">
          <label for="textFile">Your text file:</label>
         <input  id="textFile" type="file" name="textFile" accept=".doc, .docx, .text, .txt" required/>
     </div>
     <div>
-        <input  type="input"/>
+        <input  type="submit"/>
     </div>
     </form>
     {{if .}}
