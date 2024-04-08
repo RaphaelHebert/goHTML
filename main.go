@@ -2,9 +2,15 @@ package main
 
 import (
 	"html/template"
+	"io"
 	"log"
 	"net/http"
 )
+
+type registrationData struct {
+	Name string
+	text string
+}
 
 var tpl *template.Template
 
@@ -22,5 +28,19 @@ func main (){
 }
 
 func welcome(w http.ResponseWriter, req *http.Request){
-	tpl.ExecuteTemplate(w, "welcome.gohtml", nil)
+	var data registrationData
+	if req.Method == http.MethodPost {
+		// parse the file
+		data.Name = req.FormValue("name")
+		f, _, err := req.FormFile("textFile")
+		if err != nil {
+			http.Error(w, "could not find file", http.StatusInternalServerError)
+		}
+		c, err := io.ReadAll(f)
+		if err != nil {
+			http.Error(w, "could not find file", http.StatusInternalServerError)
+		}
+		data.text = string(c)
+	}
+	tpl.ExecuteTemplate(w, "welcome.gohtml", data)
 }

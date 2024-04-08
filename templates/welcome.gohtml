@@ -25,6 +25,10 @@
     </form>
     {{if .}}
     <p> information submitted successfully </p>
+    <h2>File title</h2>
+    <p>{{.name}}</p>
+    <h2>File content</h2>
+    <p>{{.text}}</p>
     <a href="/text"> see my information</a>
     {{end}}
 	{{/* TODO: add JS <script src="index.js"></script> */}}
