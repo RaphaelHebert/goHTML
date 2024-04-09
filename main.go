@@ -21,14 +21,45 @@ func init(){
 
 func main (){
 	http.HandleFunc("/", welcome)
+	http.HandleFunc("/login", login)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	http.Handle("/favicon.ico", http.NotFoundHandler())
 	// listen to port 8080 and use the default mux handler
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
+func login(w http.ResponseWriter, req *http.Request){
+	if req.Method == http.MethodPost {
+		// parse the file
+		if req.FormValue("name") == "Raphael" && req.FormValue("password") == "1234" {
+			c := &http.Cookie{
+				Name: "session",
+				Value: "sessionValue",
+			}
+			http.SetCookie(w, c)
+			http.Redirect(w, req, "/welcome", http.StatusSeeOther)
+		}
+	}
+	tpl.ExecuteTemplate(w, "login.gohtml", nil)
+}
+
 func welcome(w http.ResponseWriter, req *http.Request){
 	var data registrationData
+
+	// check cookie 
+	c, err := req.Cookie("session")
+	if err != nil {
+		// TODO: redirect to login when auth is available
+		http.Redirect(w, req, "/login", http.StatusSeeOther)
+		// create cookie
+		c = &http.Cookie{
+			Name: "session",
+			Value: "sessionValue",
+		}
+		http.SetCookie(w, c)
+	}
+
+	
 	if req.Method == http.MethodPost {
 		// parse the file
 		data.Name = req.FormValue("name")
@@ -44,3 +75,4 @@ func welcome(w http.ResponseWriter, req *http.Request){
 	}
 	tpl.ExecuteTemplate(w, "welcome.gohtml", data)
 }
+
