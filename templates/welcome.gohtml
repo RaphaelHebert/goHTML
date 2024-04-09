@@ -13,7 +13,7 @@
     <form method="POST" enctype="multipart/form-data">
     <div class="col">
         <label for="name">Your name:</label>
-        <input  id="name" type="text" name="name" maxlength=128 minlength=4 required/>
+        <input  id="name" type="text" name="name" maxlength=128 minlength=4 required placeholder="A nice story"/>
     </div>
     <div class="col">
          <label for="textFile">Your text file:</label>
@@ -25,7 +25,7 @@
     </form>
     <form method="GET" action="/logout">
     <div class="col">
-      <input id="submitLogout" type="submit"/>
+      <input id="submitLogout" type="submit" value="input">
     </div>
     </form>
     {{if .Text}}

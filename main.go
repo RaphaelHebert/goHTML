@@ -30,26 +30,29 @@ func main (){
 }
 
 func login(w http.ResponseWriter, req *http.Request){
-	if req.Method == http.MethodPost {
-		// parse the file
-		if req.FormValue("name") == "Raphael" && req.FormValue("password") == "1234" {
-			c := &http.Cookie{
-				Name: "session",
-				Value: "sessionValue",
+	_, err := req.Cookie("session")
+	if err != nil {
+		if req.Method == http.MethodPost {
+			// parse the file
+			if req.FormValue("name") == "Raphael" && req.FormValue("password") == "1234" {
+				c := &http.Cookie{
+					Name: "session",
+					Value: "sessionValue",
+				}
+				http.SetCookie(w, c)
+				http.Redirect(w, req, "/welcome", http.StatusSeeOther)
 			}
-			http.SetCookie(w, c)
-			http.Redirect(w, req, "/welcome", http.StatusSeeOther)
 		}
+		tpl.ExecuteTemplate(w, "login.gohtml", nil)
+		return
 	}
-	tpl.ExecuteTemplate(w, "login.gohtml", nil)
+	http.Redirect(w, req, "/", http.StatusSeeOther)
 }
 
 func logout(w http.ResponseWriter, req *http.Request){
-	c, err := req.Cookie("session")
-	if err != nil {
-		http.Redirect(w, req, "/login", http.StatusSeeOther)
-	}
+	c, _ := req.Cookie("session")
 	c.MaxAge = -1
+	http.SetCookie(w, c)
 	http.Redirect(w, req, "/login", http.StatusSeeOther)
 }
 
