@@ -22,6 +22,7 @@ func init(){
 func main (){
 	http.HandleFunc("/", welcome)
 	http.HandleFunc("/login", login)
+	http.HandleFunc("/logout", logout)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	http.Handle("/favicon.ico", http.NotFoundHandler())
 	// listen to port 8080 and use the default mux handler
@@ -41,6 +42,15 @@ func login(w http.ResponseWriter, req *http.Request){
 		}
 	}
 	tpl.ExecuteTemplate(w, "login.gohtml", nil)
+}
+
+func logout(w http.ResponseWriter, req *http.Request){
+	c, err := req.Cookie("session")
+	if err != nil {
+		http.Redirect(w, req, "/login", http.StatusSeeOther)
+	}
+	c.MaxAge = -1
+	http.Redirect(w, req, "/login", http.StatusSeeOther)
 }
 
 func welcome(w http.ResponseWriter, req *http.Request){

@@ -20,7 +20,12 @@
         <input  id="textFile" type="file" name="textFile" accept=".doc, .docx, .text, .txt" required/>
     </div>
     <div>
-        <input  type="submit"/>
+        <input type="submit"/>
+    </div>
+    </form>
+    <form method="GET" action="/logout">
+    <div class="col">
+      <input id="submitLogout" type="submit"/>
     </div>
     </form>
     {{if .Text}}
