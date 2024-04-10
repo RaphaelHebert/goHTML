@@ -32,6 +32,10 @@ func main (){
 }
 
 func login(w http.ResponseWriter, req *http.Request){
+	if IsAlreadyLoggedIn(req){
+		http.Redirect(w, req, "/welcome", http.StatusSeeOther)
+	}
+	
 	_, err := req.Cookie("session")
 	if err != nil {
 		if req.Method == http.MethodPost {
@@ -53,17 +57,25 @@ func login(w http.ResponseWriter, req *http.Request){
 
 func signUp(w http.ResponseWriter, req *http.Request){
 	// TODO: check if already logged in
+	if IsAlreadyLoggedIn(req){
+		http.Redirect(w, req, "/welcome", http.StatusSeeOther)
+	}
+
 	// TODO parse form data
 		if req.Method == http.MethodPost {
-			// parse the file
-			if req.FormValue("email") == "raphaelhebert18@gmail.com" && req.FormValue("password") == "1234" {
-				c := &http.Cookie{
-					Name: "session",
-					Value: "sessionValue",
-				}
-				http.SetCookie(w, c)
-				http.Redirect(w, req, "/welcome", http.StatusSeeOther)
+			// parse the form value
+			// create new user
+			nu := User{req.FormValue("firstName"), req.FormValue("lastName"), req.FormValue("email"), []byte(req.FormValue("password"))}
+			udb[req.FormValue("email")] = nu
+			sID := "someRandomSid"
+			c := &http.Cookie{
+				Name: "session",
+				Value: sID,
 			}
+			// open session for new user
+			sdb[sID] = nu.email
+			http.SetCookie(w, c)
+			http.Redirect(w, req, "/welcome", http.StatusSeeOther)
 		}
 		tpl.ExecuteTemplate(w, "signup.gohtml", nil)
 }
