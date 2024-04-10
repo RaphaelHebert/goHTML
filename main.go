@@ -36,23 +36,26 @@ func login(w http.ResponseWriter, req *http.Request){
 		http.Redirect(w, req, "/welcome", http.StatusSeeOther)
 	}
 	
-	_, err := req.Cookie("session")
-	if err != nil {
-		if req.Method == http.MethodPost {
-			// parse the file
-			if req.FormValue("email") == "raphaelhebert18@gmail.com" && req.FormValue("password") == "1234" {
-				c := &http.Cookie{
-					Name: "session",
-					Value: "sessionValue",
-				}
-				http.SetCookie(w, c)
-				http.Redirect(w, req, "/welcome", http.StatusSeeOther)
-			}
+	if req.Method == http.MethodPost {
+		// parse the file
+		u, ok := udb[req.FormValue("email")]
+		if !ok {
+			http.Error(w, "user's email and password do not match", 403)
 		}
-		tpl.ExecuteTemplate(w, "login.gohtml", nil)
-		return
+		// TODO use bcrypt to decode password
+		if u.password != req.FormValue("password") {
+			http.Error(w, "user's email and password do not match", 403)
+		}
+		sID := "someRandomString"
+		c := &http.Cookie{
+			Name: "session",
+			Value: sID,
+		}
+		sdb[sID] = u.email
+		http.SetCookie(w, c)
+		http.Redirect(w, req, "/welcome", http.StatusSeeOther)
 	}
-	http.Redirect(w, req, "/", http.StatusSeeOther)
+	tpl.ExecuteTemplate(w, "login.gohtml", nil)
 }
 
 func signUp(w http.ResponseWriter, req *http.Request){
@@ -65,7 +68,8 @@ func signUp(w http.ResponseWriter, req *http.Request){
 		if req.Method == http.MethodPost {
 			// parse the form value
 			// create new user
-			nu := User{req.FormValue("firstName"), req.FormValue("lastName"), req.FormValue("email"), []byte(req.FormValue("password"))}
+			// TODO use bcrypt to encode password
+			nu := User{req.FormValue("firstName"), req.FormValue("lastName"), req.FormValue("email"), req.FormValue("password")}
 			udb[req.FormValue("email")] = nu
 			sID := "someRandomSid"
 			c := &http.Cookie{
@@ -82,12 +86,23 @@ func signUp(w http.ResponseWriter, req *http.Request){
 
 func logout(w http.ResponseWriter, req *http.Request){
 	c, _ := req.Cookie("session")
+
+	// close session
+	delete(sdb, c.Value)
+
+	//remove cookie
 	c.MaxAge = -1
+	c.Value = ""
 	http.SetCookie(w, c)
+
 	http.Redirect(w, req, "/login", http.StatusSeeOther)
 }
 
 func welcome(w http.ResponseWriter, req *http.Request){
+	if !IsAlreadyLoggedIn(req){
+		http.Redirect(w, req, "/login", http.StatusSeeOther)
+	}
+
 	var data registrationData
 
 	// check cookie 
