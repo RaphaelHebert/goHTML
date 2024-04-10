@@ -22,6 +22,8 @@ func init(){
 func main (){
 	http.HandleFunc("/", welcome)
 	http.HandleFunc("/login", login)
+	http.HandleFunc("/sign-up", signUp)
+
 	http.HandleFunc("/logout", logout)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	http.Handle("/favicon.ico", http.NotFoundHandler())
@@ -47,6 +49,23 @@ func login(w http.ResponseWriter, req *http.Request){
 		return
 	}
 	http.Redirect(w, req, "/", http.StatusSeeOther)
+}
+
+func signUp(w http.ResponseWriter, req *http.Request){
+	// TODO: check if already logged in
+	// TODO parse form data
+		if req.Method == http.MethodPost {
+			// parse the file
+			if req.FormValue("email") == "raphaelhebert18@gmail.com" && req.FormValue("password") == "1234" {
+				c := &http.Cookie{
+					Name: "session",
+					Value: "sessionValue",
+				}
+				http.SetCookie(w, c)
+				http.Redirect(w, req, "/welcome", http.StatusSeeOther)
+			}
+		}
+		tpl.ExecuteTemplate(w, "signup.gohtml", nil)
 }
 
 func logout(w http.ResponseWriter, req *http.Request){

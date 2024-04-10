@@ -27,23 +27,26 @@
                 <form method="POST" enctype="multipart/form-data">
                     <!-- 2 column grid layout with text inputs for the first and last names -->
                     <div class="row">
-                      <div class="col-md-6 mb-4">
-                          <div data-mdb-input-init class="form-outline">
+                      <div class="col-md-6">
+                          <div data-mdb-input-init class="form-outline mb-4">
                             <label class="form-label" for="form3Example1">Title</label>
                             <input type="text" name="name" id="form3Example1" class="form-control" maxlength=128 minlength=4 required placeholder="A nice story"/>
                           </div>
                           <div data-mdb-input-init class="form-outline">
-                            <div class="mb-3">
+                            <div class="mb-1">
                               <label for="formFile" class="form-label">My story</label>
                               <input class="form-control" id="textFile" type="file" name="textFile" accept=".doc, .docx, .text, .txt" required>
                             </div>
                             <span class="text-secondary">file must be format .doc, .docx, .text, or .txt only</span>
                           </div>
                       </div>
-                      <input class="form-check-input me-2" name="isPublic" type="checkbox" value="" id="publicCheck" checked />
+                      <div class="mb-4 mt-4">
+                      <input class="form-check-input me-2" name="isPublic" type="checkbox" value="" id="publicCheck" />
                       <label class="form-check-label" for="form2Example33">
                         make it public
                       </label>
+                      
+                      </div>
                     </div>
                     <!-- Submit button -->
                     <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block mb-4">
