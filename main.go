@@ -34,7 +34,7 @@ func login(w http.ResponseWriter, req *http.Request){
 	if err != nil {
 		if req.Method == http.MethodPost {
 			// parse the file
-			if req.FormValue("name") == "Raphael" && req.FormValue("password") == "1234" {
+			if req.FormValue("email") == "raphaelhebert18@gmail.com" && req.FormValue("password") == "1234" {
 				c := &http.Cookie{
 					Name: "session",
 					Value: "sessionValue",
