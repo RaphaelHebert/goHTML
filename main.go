@@ -44,17 +44,15 @@ func login(w http.ResponseWriter, req *http.Request){
 		u, ok := udb[req.FormValue("email")]
 		if !ok {
 			http.Error(w, "user's email and password do not match", 403)
+			return
 		}
 		// TODO use bcrypt to decode password
 		if err := bcrypt.CompareHashAndPassword(u.Password, []byte(req.FormValue("password"))); err != nil{
 			http.Error(w, "user's email and password do not match", 403)
+			return
 		}
-		sID := "someRandomString"
-		c := &http.Cookie{
-			Name: "session",
-			Value: sID,
-		}
-		sdb[sID] = u.Email
+		c := makeSessionCookie()
+		sdb[c.Value] = u.Email
 		http.SetCookie(w, c)
 		http.Redirect(w, req, "/welcome", http.StatusSeeOther)
 	}
@@ -80,13 +78,9 @@ func signUp(w http.ResponseWriter, req *http.Request){
 		}
 		nu := User{req.FormValue("firstName"), req.FormValue("lastName"), req.FormValue("email"), password}
 		udb[req.FormValue("email")] = nu
-		sID := "someRandomSid"
-		c := &http.Cookie{
-			Name: "session",
-			Value: sID,
-		}
+		c := makeSessionCookie()
 		// open session for new user
-		sdb[sID] = nu.Email
+		sdb[c.Value] = nu.Email
 		http.SetCookie(w, c)
 		http.Redirect(w, req, "/welcome", http.StatusSeeOther)
 	}
