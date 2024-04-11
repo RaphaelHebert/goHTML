@@ -70,8 +70,8 @@
             <p style="color: hsl(217, 10%, 50.8%)">
                 {{.Text}}
             </p>
-            <a href="/text" class="text-secondary"> see my information</a>
           {{end}}
+          {{if (eq .User.Role "admin")}} <a href="/authors" class="text-secondary"> see author list</a>{{end}}
         </div>
     </div>
 

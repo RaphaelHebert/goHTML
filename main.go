@@ -26,6 +26,7 @@ func main (){
 	http.HandleFunc("/", welcome)
 	http.HandleFunc("/login", login)
 	http.HandleFunc("/sign-up", signUp)
+	http.HandleFunc("/authors", authors)
 
 	http.HandleFunc("/logout", logout)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
@@ -76,7 +77,7 @@ func signUp(w http.ResponseWriter, req *http.Request){
 		if err != nil {
 			http.Error(w, "Could not proceed password", http.StatusInternalServerError)
 		}
-		nu := User{req.FormValue("firstName"), req.FormValue("lastName"), req.FormValue("email"), password}
+		nu := User{req.FormValue("firstName"), req.FormValue("lastName"), req.FormValue("email"), password, req.FormValue("role")}
 		udb[req.FormValue("email")] = nu
 		c := makeSessionCookie()
 		// open session for new user
@@ -110,6 +111,8 @@ func welcome(w http.ResponseWriter, req *http.Request){
 
 	var data textData
 
+	data.User = u
+
 	// check cookie 
 	if !IsAlreadyLoggedIn(req){
 		http.Redirect(w, req, "/login", http.StatusSeeOther)
@@ -127,8 +130,13 @@ func welcome(w http.ResponseWriter, req *http.Request){
 			http.Error(w, "could not find file", http.StatusInternalServerError)
 		}
 		data.Text = string(c)
-		data.User = u
 	}
 	tpl.ExecuteTemplate(w, "welcome.gohtml", data)
 }
+
+	func authors(w http.ResponseWriter, req *http.Request){
+
+		tpl.ExecuteTemplate(w, "authors.gohtml", udb)
+	}
+
 
