@@ -1,15 +1,17 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"io"
 	"log"
 	"net/http"
 )
 
-type registrationData struct {
+type textData struct {
 	Name string
 	Text string
+	User User
 }
 
 var tpl *template.Template
@@ -43,7 +45,7 @@ func login(w http.ResponseWriter, req *http.Request){
 			http.Error(w, "user's email and password do not match", 403)
 		}
 		// TODO use bcrypt to decode password
-		if u.password != req.FormValue("password") {
+		if u.Password != req.FormValue("password") {
 			http.Error(w, "user's email and password do not match", 403)
 		}
 		sID := "someRandomString"
@@ -51,7 +53,7 @@ func login(w http.ResponseWriter, req *http.Request){
 			Name: "session",
 			Value: sID,
 		}
-		sdb[sID] = u.email
+		sdb[sID] = u.Email
 		http.SetCookie(w, c)
 		http.Redirect(w, req, "/welcome", http.StatusSeeOther)
 	}
@@ -59,29 +61,32 @@ func login(w http.ResponseWriter, req *http.Request){
 }
 
 func signUp(w http.ResponseWriter, req *http.Request){
-	// TODO: check if already logged in
 	if IsAlreadyLoggedIn(req){
 		http.Redirect(w, req, "/welcome", http.StatusSeeOther)
 	}
 
 	// TODO parse form data
-		if req.Method == http.MethodPost {
-			// parse the form value
-			// create new user
-			// TODO use bcrypt to encode password
-			nu := User{req.FormValue("firstName"), req.FormValue("lastName"), req.FormValue("email"), req.FormValue("password")}
-			udb[req.FormValue("email")] = nu
-			sID := "someRandomSid"
-			c := &http.Cookie{
-				Name: "session",
-				Value: sID,
-			}
-			// open session for new user
-			sdb[sID] = nu.email
-			http.SetCookie(w, c)
-			http.Redirect(w, req, "/welcome", http.StatusSeeOther)
+	if req.Method == http.MethodPost {
+		// parse the form value
+		// create new user
+		// TODO use bcrypt to encode password
+		if _, ok := udb[req.FormValue("email")]; ok {
+			http.Error(w, "This email is already linked to an account", http.StatusForbidden)
 		}
-		tpl.ExecuteTemplate(w, "signup.gohtml", nil)
+		nu := User{req.FormValue("firstName"), req.FormValue("lastName"), req.FormValue("email"), req.FormValue("password")}
+		udb[req.FormValue("email")] = nu
+		sID := "someRandomSid"
+		c := &http.Cookie{
+			Name: "session",
+			Value: sID,
+		}
+		// open session for new user
+		sdb[sID] = nu.Email
+		fmt.Println(sdb)
+		http.SetCookie(w, c)
+		http.Redirect(w, req, "/welcome", http.StatusSeeOther)
+	}
+	tpl.ExecuteTemplate(w, "signup.gohtml", nil)
 }
 
 func logout(w http.ResponseWriter, req *http.Request){
@@ -103,22 +108,15 @@ func welcome(w http.ResponseWriter, req *http.Request){
 		http.Redirect(w, req, "/login", http.StatusSeeOther)
 	}
 
-	var data registrationData
+	u := GetUser(req)
+
+	var data textData
 
 	// check cookie 
-	c, err := req.Cookie("session")
-	if err != nil {
-		// TODO: redirect to login when auth is available
+	if !IsAlreadyLoggedIn(req){
 		http.Redirect(w, req, "/login", http.StatusSeeOther)
-		// create cookie
-		c = &http.Cookie{
-			Name: "session",
-			Value: "sessionValue",
-		}
-		http.SetCookie(w, c)
 	}
 
-	
 	if req.Method == http.MethodPost {
 		// parse the file
 		data.Name = req.FormValue("name")
@@ -131,6 +129,7 @@ func welcome(w http.ResponseWriter, req *http.Request){
 			http.Error(w, "could not find file", http.StatusInternalServerError)
 		}
 		data.Text = string(c)
+		data.User = u
 	}
 	tpl.ExecuteTemplate(w, "welcome.gohtml", data)
 }
