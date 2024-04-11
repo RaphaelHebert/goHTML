@@ -1,11 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"html/template"
 	"io"
 	"log"
 	"net/http"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type textData struct {
@@ -45,7 +46,7 @@ func login(w http.ResponseWriter, req *http.Request){
 			http.Error(w, "user's email and password do not match", 403)
 		}
 		// TODO use bcrypt to decode password
-		if u.Password != req.FormValue("password") {
+		if err := bcrypt.CompareHashAndPassword(u.Password, []byte(req.FormValue("password"))); err != nil{
 			http.Error(w, "user's email and password do not match", 403)
 		}
 		sID := "someRandomString"
@@ -73,7 +74,11 @@ func signUp(w http.ResponseWriter, req *http.Request){
 		if _, ok := udb[req.FormValue("email")]; ok {
 			http.Error(w, "This email is already linked to an account", http.StatusForbidden)
 		}
-		nu := User{req.FormValue("firstName"), req.FormValue("lastName"), req.FormValue("email"), req.FormValue("password")}
+		password, err := bcrypt.GenerateFromPassword([]byte(req.FormValue("password")), bcrypt.MinCost)
+		if err != nil {
+			http.Error(w, "Could not proceed password", http.StatusInternalServerError)
+		}
+		nu := User{req.FormValue("firstName"), req.FormValue("lastName"), req.FormValue("email"), password}
 		udb[req.FormValue("email")] = nu
 		sID := "someRandomSid"
 		c := &http.Cookie{
@@ -82,7 +87,6 @@ func signUp(w http.ResponseWriter, req *http.Request){
 		}
 		// open session for new user
 		sdb[sID] = nu.Email
-		fmt.Println(sdb)
 		http.SetCookie(w, c)
 		http.Redirect(w, req, "/welcome", http.StatusSeeOther)
 	}
