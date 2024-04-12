@@ -113,11 +113,6 @@ func welcome(w http.ResponseWriter, req *http.Request){
 
 	data.User = u
 
-	// check cookie 
-	if !IsAlreadyLoggedIn(req){
-		http.Redirect(w, req, "/login", http.StatusSeeOther)
-	}
-
 	if req.Method == http.MethodPost {
 		// parse the file
 		data.Name = req.FormValue("name")
@@ -134,9 +129,12 @@ func welcome(w http.ResponseWriter, req *http.Request){
 	tpl.ExecuteTemplate(w, "welcome.gohtml", data)
 }
 
-	func authors(w http.ResponseWriter, req *http.Request){
-
-		tpl.ExecuteTemplate(w, "authors.gohtml", udb)
+func authors(w http.ResponseWriter, req *http.Request){
+	if !IsAlreadyLoggedIn(req) || !IsAdmin(req) {
+		http.Redirect(w, req, "/login", http.StatusSeeOther)
 	}
+
+	tpl.ExecuteTemplate(w, "authors.gohtml", udb)
+}
 
 
