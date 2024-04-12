@@ -8,7 +8,6 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 )
-
 type textData struct {
 	Name string
 	Text string
@@ -16,6 +15,8 @@ type textData struct {
 }
 
 var tpl *template.Template
+
+var expireTime int = 600
 
 // init 
 func init(){
@@ -36,7 +37,7 @@ func main (){
 }
 
 func login(w http.ResponseWriter, req *http.Request){
-	if IsAlreadyLoggedIn(req){
+	if IsAlreadyLoggedIn(w, req){
 		http.Redirect(w, req, "/welcome", http.StatusSeeOther)
 	}
 	
@@ -53,6 +54,7 @@ func login(w http.ResponseWriter, req *http.Request){
 			return
 		}
 		c := makeSessionCookie()
+		c.MaxAge = expireTime
 		sdb[c.Value] = u.Email
 		http.SetCookie(w, c)
 		http.Redirect(w, req, "/welcome", http.StatusSeeOther)
@@ -61,7 +63,7 @@ func login(w http.ResponseWriter, req *http.Request){
 }
 
 func signUp(w http.ResponseWriter, req *http.Request){
-	if IsAlreadyLoggedIn(req){
+	if IsAlreadyLoggedIn(w, req){
 		http.Redirect(w, req, "/welcome", http.StatusSeeOther)
 	}
 
@@ -80,7 +82,7 @@ func signUp(w http.ResponseWriter, req *http.Request){
 		nu := User{req.FormValue("firstName"), req.FormValue("lastName"), req.FormValue("email"), password, req.FormValue("role")}
 		udb[req.FormValue("email")] = nu
 		c := makeSessionCookie()
-		c.MaxAge = 15
+		c.MaxAge = expireTime
 		// open session for new user
 		sdb[c.Value] = nu.Email
 		http.SetCookie(w, c)
@@ -104,7 +106,7 @@ func logout(w http.ResponseWriter, req *http.Request){
 }
 
 func welcome(w http.ResponseWriter, req *http.Request){
-	if !IsAlreadyLoggedIn(req){
+	if !IsAlreadyLoggedIn(w, req){
 		http.Redirect(w, req, "/login", http.StatusSeeOther)
 	}
 
@@ -131,7 +133,7 @@ func welcome(w http.ResponseWriter, req *http.Request){
 }
 
 func authors(w http.ResponseWriter, req *http.Request){
-	if !IsAlreadyLoggedIn(req) || !IsAdmin(req) {
+	if !IsAlreadyLoggedIn(w, req) || !IsAdmin(req) {
 		http.Redirect(w, req, "/login", http.StatusSeeOther)
 	}
 
