@@ -93,8 +93,6 @@ func signUp(w http.ResponseWriter, req *http.Request){
 }
 
 func logout(w http.ResponseWriter, req *http.Request){
-	// TODO: move to CRON for production
-	CleanUpSession()
 	c, _ := req.Cookie("session")
 
 	// close session
@@ -104,6 +102,9 @@ func logout(w http.ResponseWriter, req *http.Request){
 	c.MaxAge = -1
 	c.Value = ""
 	http.SetCookie(w, c)
+
+	// TODO: move to CRON for production
+	go CleanUpSession()
 
 	http.Redirect(w, req, "/login", http.StatusSeeOther)
 }
