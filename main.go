@@ -80,6 +80,7 @@ func signUp(w http.ResponseWriter, req *http.Request){
 		nu := User{req.FormValue("firstName"), req.FormValue("lastName"), req.FormValue("email"), password, req.FormValue("role")}
 		udb[req.FormValue("email")] = nu
 		c := makeSessionCookie()
+		c.MaxAge = 15
 		// open session for new user
 		sdb[c.Value] = nu.Email
 		http.SetCookie(w, c)
