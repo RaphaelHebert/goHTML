@@ -25,10 +25,10 @@ func init(){
 }
 
 func main (){
-	http.HandleFunc("/", welcome)
-	http.HandleFunc("/login", login)
-	http.HandleFunc("/sign-up", signUp)
-	http.HandleFunc("/authors", authors)
+	http.HandleFunc("/", authorized(welcome))
+	http.HandleFunc("/login", guestGuard(login))
+	http.HandleFunc("/sign-up", guestGuard(signUp))
+	http.HandleFunc("/authors", admin(authors))
 
 	http.HandleFunc("/logout", logout)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
@@ -38,10 +38,6 @@ func main (){
 }
 
 func login(w http.ResponseWriter, req *http.Request){
-	if IsAlreadyLoggedIn(w, req){
-		http.Redirect(w, req, "/welcome", http.StatusSeeOther)
-	}
-	
 	if req.Method == http.MethodPost {
 		// parse the file
 		u, ok := udb[req.FormValue("email")]
@@ -64,10 +60,6 @@ func login(w http.ResponseWriter, req *http.Request){
 }
 
 func signUp(w http.ResponseWriter, req *http.Request){
-	if IsAlreadyLoggedIn(w, req){
-		http.Redirect(w, req, "/welcome", http.StatusSeeOther)
-	}
-
 	// TODO parse form data
 	if req.Method == http.MethodPost {
 		// parse the form value
@@ -110,10 +102,6 @@ func logout(w http.ResponseWriter, req *http.Request){
 }
 
 func welcome(w http.ResponseWriter, req *http.Request){
-	if !IsAlreadyLoggedIn(w, req){
-		http.Redirect(w, req, "/login", http.StatusSeeOther)
-	}
-
 	u := GetUser(req)
 
 	var data textData
@@ -137,10 +125,6 @@ func welcome(w http.ResponseWriter, req *http.Request){
 }
 
 func authors(w http.ResponseWriter, req *http.Request){
-	if !IsAlreadyLoggedIn(w, req) || !IsAdmin(req) {
-		http.Redirect(w, req, "/login", http.StatusSeeOther)
-	}
-
 	tpl.ExecuteTemplate(w, "authors.gohtml", udb)
 }
 
