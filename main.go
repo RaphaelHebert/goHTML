@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -16,7 +17,7 @@ type textData struct {
 
 var tpl *template.Template
 
-var expireTime int = 600
+const expireTime int = 600 // session lifespan in sec
 
 // init 
 func init(){
@@ -55,7 +56,7 @@ func login(w http.ResponseWriter, req *http.Request){
 		}
 		c := makeSessionCookie()
 		c.MaxAge = expireTime
-		sdb[c.Value] = u.Email
+		sdb[c.Value] = Session{u.Email, time.Now()}
 		http.SetCookie(w, c)
 		http.Redirect(w, req, "/welcome", http.StatusSeeOther)
 	}
@@ -84,7 +85,7 @@ func signUp(w http.ResponseWriter, req *http.Request){
 		c := makeSessionCookie()
 		c.MaxAge = expireTime
 		// open session for new user
-		sdb[c.Value] = nu.Email
+		sdb[c.Value] = Session{nu.Email, time.Now()}
 		http.SetCookie(w, c)
 		http.Redirect(w, req, "/welcome", http.StatusSeeOther)
 	}
@@ -92,6 +93,8 @@ func signUp(w http.ResponseWriter, req *http.Request){
 }
 
 func logout(w http.ResponseWriter, req *http.Request){
+	// TODO: move to CRON for production
+	CleanUpSession()
 	c, _ := req.Cookie("session")
 
 	// close session
