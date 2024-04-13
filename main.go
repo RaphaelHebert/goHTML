@@ -1,5 +1,7 @@
 package main
 
+// Main run and serve a basic webapp for made for learning purposes.
+
 import (
 	"html/template"
 	"io"
@@ -9,6 +11,8 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 )
+
+// TextData represents a text extracted from a text file submitted by a user.
 type textData struct {
 	Name string
 	Text string
@@ -17,14 +21,15 @@ type textData struct {
 
 var tpl *template.Template
 
+// ExpireTime sets the lifespan of a session.
 const expireTime int = 600 // session lifespan in sec
 
-// init 
-func init(){
+// init
+func init() {
 	tpl = template.Must(tpl.ParseGlob("templates/*"))
 }
 
-func main (){
+func main() {
 	http.HandleFunc("/", authorized(welcome))
 	http.HandleFunc("/login", guestGuard(login))
 	http.HandleFunc("/sign-up", guestGuard(signUp))
@@ -37,7 +42,7 @@ func main (){
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-func login(w http.ResponseWriter, req *http.Request){
+func login(w http.ResponseWriter, req *http.Request) {
 	if req.Method == http.MethodPost {
 		// parse the file
 		u, ok := udb[req.FormValue("email")]
@@ -46,7 +51,7 @@ func login(w http.ResponseWriter, req *http.Request){
 			return
 		}
 		// TODO use bcrypt to decode password
-		if err := bcrypt.CompareHashAndPassword(u.Password, []byte(req.FormValue("password"))); err != nil{
+		if err := bcrypt.CompareHashAndPassword(u.Password, []byte(req.FormValue("password"))); err != nil {
 			http.Error(w, "user's email and password do not match", 403)
 			return
 		}
@@ -59,7 +64,7 @@ func login(w http.ResponseWriter, req *http.Request){
 	tpl.ExecuteTemplate(w, "login.gohtml", nil)
 }
 
-func signUp(w http.ResponseWriter, req *http.Request){
+func signUp(w http.ResponseWriter, req *http.Request) {
 	// TODO parse form data
 	if req.Method == http.MethodPost {
 		// parse the form value
@@ -84,7 +89,7 @@ func signUp(w http.ResponseWriter, req *http.Request){
 	tpl.ExecuteTemplate(w, "signup.gohtml", nil)
 }
 
-func logout(w http.ResponseWriter, req *http.Request){
+func logout(w http.ResponseWriter, req *http.Request) {
 	c, _ := req.Cookie("session")
 
 	// close session
@@ -101,7 +106,7 @@ func logout(w http.ResponseWriter, req *http.Request){
 	http.Redirect(w, req, "/login", http.StatusSeeOther)
 }
 
-func welcome(w http.ResponseWriter, req *http.Request){
+func welcome(w http.ResponseWriter, req *http.Request) {
 	u := GetUser(req)
 
 	var data textData
@@ -124,8 +129,6 @@ func welcome(w http.ResponseWriter, req *http.Request){
 	tpl.ExecuteTemplate(w, "welcome.gohtml", data)
 }
 
-func authors(w http.ResponseWriter, req *http.Request){
+func authors(w http.ResponseWriter, req *http.Request) {
 	tpl.ExecuteTemplate(w, "authors.gohtml", udb)
 }
-
-
